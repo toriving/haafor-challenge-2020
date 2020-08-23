@@ -3,7 +3,7 @@
 The project for HAAFOR CHALLENGE 2020
 
 ## Challenge Information
-**뉴스 Article 들 간의 선후관계 파악**^1^
+**뉴스 Article 들 간의 선후관계 파악**¹
 총 20만건의 짧은 뉴스 Article 쌍들을 분석하여 Article의 발행 순서를 맞추어야합니다.  
 
 한 쌍을 이루는 두 기사 간의 선후관계를 추측할 수 있는 내용을 추출하는 것이 핵심입니다.
@@ -21,15 +21,15 @@ The project for HAAFOR CHALLENGE 2020
 4. 적당한 Hyper-parameter를 찾은 후 실제 `Answer.csv`를 제출 할 때는 200,000건의 모든 데이터를 Training set으로 만들어 사용했습니다.
 
 ## Model
-먼저 모델은 빠르게 구현 및 테스트를 위해 [Huggingface Transformers](https://github.com/huggingface/transformers)^2^를 이용하였습니다.
+먼저 모델은 빠르게 구현 및 테스트를 위해 [Huggingface Transformers](https://github.com/huggingface/transformers)²를 이용하였습니다.
 
 어떤 모델을 기본 모델로 사용할지에 대한 의사결정이 필요하여 다양한 BERT 모델을 데이터셋 기준으로 다양하게 테스트 해본 결과 `Albert`와 `Electra`가 좋은 성능을 보였습니다.  
 
 `Albert`의 pre-training 과정의 task 중 하나인 `Sentence Order Prediction (SOP)`가 Haafor Challenge 와는 딱 맞는 task는 아니지만 문장의 전후 관계 파악을 학습한다는 점에서 조금이나마 영향이 있을거라 판단되어 `Albert`를 택하였습니다. 
 
-`Huggingface Transformers`^2^에서 제공하는 Pre-trained `Albert`는 다양한 모델 사이즈가 존재하는데 모델 사이즈를 키우면 성능이 향상되는걸 확인하여 가장 큰 `albert-xxlarge-v2`를 사용하였습니다.
+`Huggingface Transformers`²에서 제공하는 Pre-trained `Albert`는 다양한 모델 사이즈가 존재하는데 모델 사이즈를 키우면 성능이 향상되는걸 확인하여 가장 큰 `albert-xxlarge-v2`를 사용하였습니다.
 
-`Albert`가 사용할 수 있는 maximum length는 512 이기 때문에 Article 1의 Headline + Body와 Article 2의 Headline + Body 의 합이 512가 넘는 일이 발생을 하여 아래와 같은 가정과 방법으로 해결하려고 하였습니다.
+`Albert`가 사용할 수 있는 maximum length는 512 이기 때문에 Article 1의 Headline + Body와 Article 2의 Headline + Body 의 합이 512가 넘는 일이 발생을 하여 아래와 같은 가정을 세우고 기술한 방법으로 해결하려고 하였습니다.
 1. 어떤 Article이든 Data preprocessing 과정에서 전후 순서를 바꿔준 과정이 존재하므로 첫번째 Article에 존재 할 수 있다.
 2. 첫번째 Article에 존재한다면 Headline + Body를 512 Token 안에 담을 수 있다.
 3. 그렇다면 Article 고유의 ID를 부여하여 Feature로 추가해준다면, 두번째 Article로 사용되어 짤리더라도 첫번째 Article로 사용된적이 한번이라도 있으므로 어느정도 짤린부분의 정보를 파악 할 수 있다.
@@ -45,6 +45,7 @@ The project for HAAFOR CHALLENGE 2020
 전체적인 모델은 아래와 같습니다.  
 \* Headline과 Body는 여러 토큰을 포함하고 있습니다.
 
+  
 ![Model](asset/model.png)
 
 ## Hyper-parameters
@@ -117,7 +118,7 @@ $ python main.py \
 해당 Hyper-parameters는 data_in 폴더에 데이터가 존재하고, data_out에 학습 결과 및 로그를 저장합니다.  
 
 ## Requirements
-Apex의 경우 [NVIDIA-apex github](https://github.com/NVIDIA/apex)^3^에서 직접 설치하여야 하며, torch는 1.6 이상 GPU 버전을 사용하길 권장합니다.  
+Apex의 경우 [NVIDIA-apex github](https://github.com/NVIDIA/apex)³에서 직접 설치하여야 하며, torch는 1.6 이상 GPU 버전을 사용하길 권장합니다.  
 Apex 사용을 원치 않을 경우 실행 시 --fp16, --fp16_opt_level 옵션을 없애야 합니다.  
 (Tensorboard는 option)
 ```
@@ -131,6 +132,6 @@ transformers==3.0.2
 ```
 
 ## Reference
-^1^[Haafor Challenge](https://www.haafor.com/challenge/)  
-^2^[Huggingface Transformers](https://github.com/huggingface/transformers)  
-^3^[NVIDIA-apex](https://github.com/NVIDIA/apex)
+¹[Haafor Challenge](https://www.haafor.com/challenge/)  
+²[Huggingface Transformers](https://github.com/huggingface/transformers)  
+³[NVIDIA-apex](https://github.com/NVIDIA/apex)
