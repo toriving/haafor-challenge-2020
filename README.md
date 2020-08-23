@@ -1,51 +1,52 @@
-[Korean](README.md) | [English](README_ENG.md)
+[Korean](README_KOR.md) | [English](README.md)
 # Haafor Challenge 2020
 The project for HAAFOR CHALLENGE 2020
 
 ## Challenge Information
-**뉴스 Article 들 간의 선후관계 파악**¹
-총 20만건의 짧은 뉴스 Article 쌍들을 분석하여 Article의 발행 순서를 맞추어야합니다.  
+**Finding the chronological order of articles**¹  
 
-한 쌍을 이루는 두 기사 간의 선후관계를 추측할 수 있는 내용을 추출하는 것이 핵심입니다.
+200,000 paris of articles will be provided. 
+
+We encourage participants to develop an algorithm, which can analyze the relation between articles and figure out the chronological order of articles.
 
 ## Data Preprocessing
 
-1. 학습 데이터로 주어진 전체 20만건의 데이터를 Hyper-parameter search를 위해 아래와 같이 나누었습니다.
+1. The total 200,000 data given as training data were divided as follows for hyper-parameter search.
     - Train : 190,000
     - Dev : 10,000
-2. Training set에 대해서 label을 0으로 붙여주고, Training set 전체를 복사하여 Article의 순서를 바꾸어 label을 1로 변경해주었습니다.
+2. For the training set, the label was set to 0, and the entire training set was duplicated and the order of articles was changed, and the label was changed to 1.
     - Train : 380,000
         - Positive (Label : 0) : 190,000
         - Negative (Label : 1) : 190,000
-3. Development set에 대해서는 random shuffle 후 50% 는 label을 0으로 주고, 나머지 50%는 순서를 바꾸어 label을 1로 주었습니다.
-4. 적당한 Hyper-parameter를 찾은 후 실제 `Answer.csv`를 제출 할 때는 200,000건의 모든 데이터를 Training set으로 만들어 사용했습니다.
+3. For the development set, after random shuffle, 50% gave a label of 0, and the remaining 50% changed the order and gave a label of 1.
+4. When submitting the actual `Answer.csv` after finding a suitable hyper-parameter, all data of 200,000 cases were used as the training set.
 
 ## Model
-먼저 모델은 빠르게 구현 및 테스트를 위해 [Huggingface Transformers](https://github.com/huggingface/transformers)²를 이용하였습니다.
+[Huggingface Transformers](https://github.com/huggingface/transformers)² was used to quickly implement and test the model.
 
-어떤 모델을 기본 모델로 사용할지에 대한 의사결정이 필요하여 다양한 BERT 모델을 데이터셋 기준으로 다양하게 테스트 해본 결과 `Albert`와 `Electra`가 좋은 성능을 보였습니다.  
+As a result of testing various BERT models based on the dataset, `Albert` and `Electra` showed good performance.
 
-`Albert`의 pre-training 과정의 task 중 하나인 `Sentence Order Prediction (SOP)`가 Haafor Challenge 와는 딱 맞는 task는 아니지만 문장의 전후 관계 파악을 학습한다는 점에서 조금이나마 영향이 있을거라 판단되어 `Albert`를 택하였습니다. 
+Although `Sentence Order Prediction (SOP)`, one of the tasks in the pre-training process of `Albert`, is not suitable for the current task, `Albert` was chosen because it learns to understand the chronological order of sentences.
 
-`Huggingface Transformers`²에서 제공하는 Pre-trained `Albert`는 다양한 모델 사이즈가 존재하는데 모델 사이즈를 키우면 성능이 향상되는걸 확인하여 가장 큰 `albert-xxlarge-v2`를 사용하였습니다.
+Pre-trained `Albert` provided by `Huggingface Transformers`² exists in various model sizes, but it was confirmed that the performance improved when the model size was increased, and the largest `albert-xxlarge-v2` was used.
 
-`Albert`가 사용할 수 있는 maximum length는 512 이기 때문에 Article 1의 Headline + Body와 Article 2의 Headline + Body 의 합이 512가 넘는 일이 발생을 하여 아래와 같은 가정을 세우고 기술한 방법으로 해결하려고 하였습니다.
-1. 어떤 Article이든 Data preprocessing 과정에서 전후 순서를 바꿔준 과정이 존재하므로 첫번째 Article에 존재 할 수 있다.
-2. 첫번째 Article에 존재한다면 Headline + Body를 512 Token 안에 담을 수 있다.
-3. 그렇다면 Article 고유의 ID를 부여하여 Feature로 추가해준다면, 두번째 Article로 사용되어 짤리더라도 첫번째 Article로 사용된적이 한번이라도 있으므로 어느정도 짤린부분의 정보를 파악 할 수 있다.
-4. ID Feature를 직접적으로 주는 것 보다 각 Token에 ID Embedding을 추가하여 준다면 각 Article 마다 Token의 전체 Embedding도 다르게 표현되어 중요한 Token에 정보를 더 포함 할 것이라고 판단되어 Embedding을 추가한다.
-5. Validation / Test 과정에서 처음보는 Article이 등장하면 해당 Article의 ID는 `[UNK]`에 해당하는 ID를 부여한다.
-6. 위와 같은 상황에서 ID Embedding의 영향력을 유지하기 위해 Train 과정에서 매 Step 마다 Random으로 ID를 `[UNK]`으로 변경해주는 `Dynamic ID Masking`을 한다.
-7. `Dynamic ID Masking`은 15% 확률로 하며, 15% 중 40%는 첫번째 Article에 대해, 40%는 두번째 Article에 대해서 그리고 나머지 20%는 전체 Article에 대해서 ID masking을 해준다.
-    
-위와 같은 방법이 실험 결과 사용하지 않았을 때 보다 성능 향상을 **1% ~ 2%** 정도 보여주었습니다.
-
-또한, 테스트 결과 Ensemble 시 성능이 **1% ~ 2%** 향상을 하여 실제 `Answer.csv` 결과를 제출 할 때는 서로 다른 seed로 5개의 모델을 학습하여 Softmax 값을 Ensemble하여 제출하였습니다.
-
-전체적인 모델은 아래와 같습니다.  
-\* Headline과 Body는 여러 토큰을 포함하고 있습니다.
-
+Since the maximum length that `Albert' can use is 512, the sum of Article 1's Headline + Body and Article 2's Headline + Body exceeds 512, so we made the following assumptions and tried to solve them with the described method.
+1. Any Article can exist in the first article because there is a process that changed the order before and after in the data preprocessing process.
+2. If it exists in the first Article, Headline + Body can all be contained in 512 Tokens.
+3. In that case, if I give an article's unique ID and add it as a feature, even if it is used as a second article and cut off, it has been used as the first article once, so model can grasp some information.
+4. If ID Embedding is added to each Token rather than directly giving the ID Feature, the entire Embedding of Token is expressed differently for each Article, so it is determined that more information will be included in the important Token.
+5. In the validation / test process, when an article that is first viewed appears, the ID of the article is assigned an ID corresponding to `[UNK]`.
+6. In the above situation, in order to maintain the influence of ID Embedding, perform `Dynamic ID Masking` which randomly changes the ID to `[UNK]` at every step in the training process.
+7. `Dynamic ID Masking` proceeds with a 15% probability, 40% of 15% is only for the first article, 40% for the second article, and the remaining 20% for the entire article.
   
+As a result of the experiment, the above method showed a performance improvement of **1% ~ 2%** compared to when not used.
+
+In addition, the test result Ensemble model performance improved by **1% ~ 2%**, so when submitting the actual `Answer.csv` result, 5 models were trained with different seeds and the Softmax value was ensembled and submitted.
+
+The overall model is shown below.
+\* Headline and Body contain several tokens.
+
+
 ![Model](asset/model.png)
 
 ## Hyper-parameters
@@ -67,18 +68,15 @@ The project for HAAFOR CHALLENGE 2020
     --fp16_opt_level O1 \
     --dynamic_doc_masking
 ```
-자세한 Hyper-parameters는 sh 폴더내의 스크립트 파일을 참고해주세요.
-- train.sh : 하나의 모델을 training 할때 사용한 Hyper-parameters 입니다.
-- multi_train.sh : 서로 다른 seed로 Ensemble 모델을 training 할때 사용한 Hyper-parameters 입니다. 
-- infer.sh : 학습된 모델을 바탕으로 Inference 할때 사용한 스크립트입니다.
+For detailed hyper-parameters, please refer to the script file in the `sh` folder.
 
 ## Results
 
-상기에 기술된 Hyper-parameters를 기준으로 dev을 평가 시 0.796 정도의 성능을 보여주었습니다.  
+When evaluating dev based on the Hyper-parameters described above, it showed a performance of about 0.796.
 
-Weight decay를 0.0001로 사용할 경우 seed가 2020 일때 0.806 까지 성능이 향상 되었지만, 다른 seed에서는 학습이 불안정하여 사용하지 않았습니다.
+When the weight decay was used as 0.0001, the performance improved to 0.806 when the seed was 2020, but the training was unstable in other seeds, so it was not used.
 
-Test set 의 결과는 나오는대로 추가하도록 하겠습니다.
+I will add the result of the test set as it comes out.
 
 ## Usage
 ```shell script
@@ -115,12 +113,12 @@ $ python main.py \
 
 ```
 
-해당 Hyper-parameters는 data_in 폴더에 데이터가 존재하고, data_out에 학습 결과 및 로그를 저장합니다.  
+To use the above Hyper-parameters, data must exist in the `data_in` folder. It also stores training results and logs in `data_out`.
 
 ## Requirements
-Apex의 경우 [NVIDIA-apex github](https://github.com/NVIDIA/apex)³에서 직접 설치하여야 하며, torch는 1.6 이상 GPU 버전을 사용하길 권장합니다.  
-Apex 사용을 원치 않을 경우 실행 시 --fp16, --fp16_opt_level 옵션을 없애야 합니다.  
-(Tensorboard는 option)
+In the case of `Apex`, you must install it directly from [NVIDIA-apex github](https://github.com/NVIDIA/apex)³, and for `torch`, it is recommended to use GPU version 1.6 or higher.
+If you do not want to use `Apex`, you should remove the --fp16, --fp16_opt_level options at run time.
+(`Tensorboard` is option)
 ```
 apex==0.1
 numpy==1.19.1
