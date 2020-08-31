@@ -2,6 +2,8 @@
 # Haafor Challenge 2020
 The project for HAAFOR CHALLENGE 2020
 
+**1st place on HAAFOR CHALLENGE 2020**
+
 ## Challenge Information
 **Finding the chronological order of articles**¹  
 
@@ -76,7 +78,16 @@ When evaluating dev based on the Hyper-parameters described above, it showed a p
 
 When the weight decay was used as 0.0001, the performance improved to 0.806 when the seed was 2020, but the training was unstable in other seeds, so it was not used.
 
-I will add the result of the test set as it comes out.
+Result of testset - [LINK](https://www.haafor.com/challenge/index.aspx)
+
+Rank | Email (team) | Evaluation (Ratio)
+:----: | :----: | :----: |
+**1** | **tori*** | **80.97%** | 
+2 | tsa*, cha | 72.26% | 
+3 | saa* | 70.27% | 
+4 | dif* | 70.04% | 
+5 | pop* | 64.95% | 
+
 
 ## Usage
 ```shell script
