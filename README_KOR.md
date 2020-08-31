@@ -1,6 +1,8 @@
 [Korean](README_KOR.md) | [English](README.md)
 # Haafor Challenge 2020
-The project for HAAFOR CHALLENGE 2020
+The project for HAAFOR CHALLENGE 2020  
+
+**1st place on HAAFOR CHALLENGE 2020**
 
 ## Challenge Information
 **뉴스 Article 들 간의 선후관계 파악**¹  
@@ -80,7 +82,15 @@ The project for HAAFOR CHALLENGE 2020
 
 Weight decay를 0.0001로 사용할 경우 seed가 2020 일때 0.806 까지 성능이 향상 되었지만, 다른 seed에서는 학습이 불안정하여 사용하지 않았습니다.
 
-Test set 의 결과는 나오는대로 추가하도록 하겠습니다.
+Test set의 결과 - [LINK](https://www.haafor.com/challenge/index.aspx)
+
+Rank | Email (team) | Evaluation (Ratio)
+---- | ---- | ---- |
+**1** | **tori*** | **80.97%** | 
+2 | tsa*, cha | 72.26% | 
+3 | saa* | 70.27% | 
+4 | dif* | 70.04% | 
+5 | pop* | 64.95% | 
 
 ## Usage
 ```shell script
