@@ -85,7 +85,7 @@ Weight decay를 0.0001로 사용할 경우 seed가 2020 일때 0.806 까지 성�
 Test set의 결과 - [LINK](https://www.haafor.com/challenge/index.aspx)
 
 Rank | Email (team) | Evaluation (Ratio)
----- | ---- | ---- |
+:----: | :----: | :----: |
 **1** | **tori*** | **80.97%** | 
 2 | tsa*, cha | 72.26% | 
 3 | saa* | 70.27% | 
